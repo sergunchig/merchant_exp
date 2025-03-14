@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"merchant_exp/cmd/merchant_exp/models"
@@ -12,14 +13,20 @@ import (
 
 type Application struct {
 	ErrorLog *log.Logger
-	Dao      models.Dao
+	Dao      *models.Dao
 }
 
 func initApplication() *Application {
 	dbconn := os.Getenv("DBCONNECTION")
+	fmt.Println("connection string: ", dbconn)
+	dao, err := models.NewDao(dbconn)
+	if err != nil {
+		panic("app can't connect to db")
+	}
+
 	app := &Application{
 		ErrorLog: log.New(os.Stdout, "Error", log.Ldate|log.Ltime),
-		Dao:      models.NewDao(dbconn),
+		Dao:      dao,
 	}
 
 	return app
@@ -45,5 +52,21 @@ func main() {
 }
 
 func (app *Application) HomeHandler(rw http.ResponseWriter, r *http.Request) {
-	rw.Write([]byte(app.Dao.ConnectStr()))
+
+	//todo проработать передачу файла
+	path := "C:\\Users\\Serjio\\Documents\\merchant\\first.xlsx"
+
+	ch, err := models.ReadOffersPipe(path)
+	if err != nil {
+		rw.Write([]byte(err.Error()))
+	}
+	err = app.Dao.CreateOffersPipe(context.Background(), ch)
+	var resStr string
+	if err != nil {
+		resStr = "Ok"
+	} else {
+		resStr = err.Error()
+	}
+
+	rw.Write([]byte(resStr))
 }

@@ -3,6 +3,6 @@ package models
 type Offer struct {
 	OfferId   int
 	Name      string
-	Price     float32
+	Price     float64
 	Available bool
 }
