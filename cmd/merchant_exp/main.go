@@ -7,6 +7,7 @@ import (
 	"merchant_exp/cmd/merchant_exp/models"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -45,28 +46,42 @@ func main() {
 	app := initApplication()
 	mux := http.NewServeMux()
 
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*3) //WithCancel(context.Background())
+	defer cancel()
+
 	mux.HandleFunc("/", app.HomeHandler)
 
-	http.ListenAndServe(":8080", mux)
+	host := os.Getenv("HOST")
+	srv := &http.Server{
+		Addr:    host,
+		Handler: mux,
+	}
 
+	go func() {
+		srv.ListenAndServe()
+	}()
+	<-ctx.Done()
+	srv.Shutdown(ctx)
+
+	fmt.Println("fianal")
 }
 
 func (app *Application) HomeHandler(rw http.ResponseWriter, r *http.Request) {
-
+	rw.Write([]byte("hello"))
+}
+func (app *Application) ImportHandler(rw http.ResponseWriter, r *http.Request) {
 	//todo проработать передачу файла
 	path := "C:\\Users\\Serjio\\Documents\\merchant\\first.xlsx"
-
-	ch, err := models.ReadOffersPipe(path)
-	if err != nil {
-		rw.Write([]byte(err.Error()))
-	}
-	err = app.Dao.CreateOffersPipe(context.Background(), ch)
-	var resStr string
-	if err != nil {
-		resStr = "Ok"
-	} else {
-		resStr = err.Error()
-	}
-
-	rw.Write([]byte(resStr))
+	fmt.Printf(path)
+	// ch, err := models.ReadOffersPipe(path)
+	// if err != nil {
+	// 	rw.Write([]byte(err.Error()))
+	// }
+	// err = app.Dao.CreateOffersPipe(context.Background(), ch)
+	// var resStr string
+	// if err != nil {
+	// 	resStr = "Ok"
+	// } else {
+	// 	resStr = err.Error()
+	// }
 }
