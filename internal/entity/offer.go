@@ -1,4 +1,4 @@
-package models
+package entity
 
 type Offer struct {
 	OfferId   int

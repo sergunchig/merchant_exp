@@ -1,20 +1,26 @@
-package models
+package storage
 
 import (
 	"errors"
 	"fmt"
+	"io"
+	"merchant_exp/internal/entity"
+	"os"
 
 	"github.com/tealeg/xlsx/v3"
 )
 
-func ExcelRead(file string) ([]Offer, error) {
+type ExcelReaderObj struct {
+}
+
+func (er ExcelReaderObj) Read(file string) ([]entity.Offer, error) {
 
 	wb, err := xlsx.OpenFile(file)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("cant read file %s", file), err)
 	}
 	sheet := wb.Sheets[0]
-	offerlist := make([]Offer, 0, sheet.MaxRow)
+	offerlist := make([]entity.Offer, 0, sheet.MaxRow)
 
 	for i := 1; i < sheet.MaxRow; i++ {
 		r, err := sheet.Row(i)
@@ -30,7 +36,7 @@ func ExcelRead(file string) ([]Offer, error) {
 			continue
 		}
 
-		offerlist = append(offerlist, Offer{
+		offerlist = append(offerlist, entity.Offer{
 			OfferId:   id,
 			Name:      r.GetCell(1).Value,
 			Price:     price,
@@ -43,8 +49,8 @@ func ExcelRead(file string) ([]Offer, error) {
 		return nil, fmt.Errorf(fmt.Sprintf("error read file %s", file), errors.New(""))
 	}
 }
-func ReadOffersPipe(file string) (<-chan Offer, error) {
-	out := make(chan Offer, 10)
+func (er ExcelReaderObj) ReadAsync(file string) (<-chan entity.Offer, error) {
+	out := make(chan entity.Offer, 10)
 
 	wb, err := xlsx.OpenFile(file)
 	if err != nil {
@@ -68,16 +74,28 @@ func ReadOffersPipe(file string) (<-chan Offer, error) {
 				continue
 			}
 
-			offer := Offer{
+			out <- entity.Offer{
 				OfferId:   id,
 				Name:      r.GetCell(1).Value,
 				Price:     price,
 				Available: r.GetCell(3).Bool(),
 			}
-
-			out <- offer
 		}
 	}()
 
 	return out, nil
+}
+
+func SaveFile(in io.Reader, fileName string) error {
+	copyname := fmt.Sprintf("./storage/%s", fileName)
+	newFile, err := os.Create(copyname)
+	defer newFile.Close()
+	if err != nil {
+		return fmt.Errorf("can't create file %w", err)
+	}
+	_, err = io.Copy(newFile, in)
+	if err != nil {
+		return fmt.Errorf("Can't copy file %w", err)
+	}
+	return nil
 }
