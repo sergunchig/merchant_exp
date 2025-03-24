@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"io"
 	"merchant_exp/internal/entity"
+	"merchant_exp/pkg/logger"
 	"os"
 
 	"github.com/tealeg/xlsx/v3"
 )
 
 type ExcelReaderObj struct {
+	log *logger.AppLogger
 }
 
 func (er ExcelReaderObj) Read(file string) ([]entity.Offer, error) {

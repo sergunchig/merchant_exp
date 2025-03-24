@@ -18,24 +18,7 @@ type Server struct {
 }
 
 func New(cfg *config.Config) (*Server, error) {
-	srv := Server{
-		cfg: &cfg.HTTP,
-	}
 
-	log, err := logger.NewLogger(cfg.Log.FILE)
-
-	if err != nil {
-		return nil, fmt.Errorf("logger error, %w", err)
-	}
-	srv.logger = log
-
-	srv.httpServer = srv.createServer()
-
-	postgres, err := postgres.New(cfg.DB.DBCONNECTION)
-	if err != nil {
-		return nil, fmt.Errorf("potgres error, %w", err)
-	}
-	srv.db = repo.New(postgres)
 
 	return &srv, nil
 }

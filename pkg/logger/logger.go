@@ -19,3 +19,15 @@ func NewLogger(logfile string) (*AppLogger, error) {
 		log: lg,
 	}, nil
 }
+
+func (l *AppLogger) Info(msg string) {
+	l.log.Printf("[Info] %s \n", msg)
+}
+
+func (l *AppLogger) Error(msg string) {
+	l.log.Printf("[Error] %s \n", msg)
+}
+
+func (l *AppLogger) Warn(msg string) {
+	l.log.Printf("[Warn] %s \n", msg)
+}

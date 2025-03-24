@@ -1,14 +1,31 @@
-package server
+package offer
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"log"
-	"merchant_exp/internal/storage"
 	"net/http"
+
+	"merchant_exp/internal/entity"
+	"merchant_exp/internal/storage"
 )
 
-func (s *Server) HomeHandler(rw http.ResponseWriter, r *http.Request) {
+type repoOffers interface {
+	GetOffers(ctx context.Context) ([]entity.Offer, error)
+}
+
+type Handler struct {
+	offers repoOffers
+}
+
+func New(repo repoOffers) *Handler {
+	return &Handler{
+		offers: repo,
+	}
+}
+
+func (s *Handler) HomeHandler(rw http.ResponseWriter, r *http.Request) {
 	html := `<html>
 	<body>
 	<div>
@@ -28,7 +45,7 @@ func (s *Server) HomeHandler(rw http.ResponseWriter, r *http.Request) {
 
 	}
 }
-func (s *Server) UploadHandler(rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) UploadHandler(rw http.ResponseWriter, r *http.Request) {
 	uploadData, _, err := r.FormFile("my_file")
 	if err != nil {
 		log.Println("cant parse file", err)

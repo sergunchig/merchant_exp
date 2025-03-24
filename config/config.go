@@ -9,10 +9,11 @@ import (
 
 type (
 	Config struct {
-		App  App
-		HTTP HTTP
-		Log  Log
-		DB   DB
+		App     App
+		HTTP    HTTP
+		Log     Log
+		DB      DB
+		Storage FileStorage
 	}
 	App struct {
 		Version string
@@ -25,6 +26,9 @@ type (
 	}
 	DB struct {
 		DBCONNECTION string
+	}
+	FileStorage struct {
+		PATH string
 	}
 )
 
@@ -40,11 +44,13 @@ func NewConfig() (*Config, error) {
 	host := os.Getenv("HOST")
 	db := os.Getenv("DBCONNECTION")
 	logfile := os.Getenv("LOGFILE")
+	fileStorage := os.Getenv("FILESTORAGE")
 
 	cfg := &Config{
-		HTTP: HTTP{HOST: host},
-		DB:   DB{DBCONNECTION: db},
-		Log:  Log{FILE: logfile},
+		HTTP:    HTTP{HOST: host},
+		DB:      DB{DBCONNECTION: db},
+		Log:     Log{FILE: logfile},
+		Storage: FileStorage{PATH: fileStorage},
 	}
 	return cfg, nil
 }
