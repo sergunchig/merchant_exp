@@ -3,14 +3,14 @@ package app
 import (
 	"context"
 	"fmt"
-	"merchant_exp/config"
-	"merchant_exp/internal/repo"
-	"merchant_exp/pkg/logger"
-	"merchant_exp/pkg/postgres"
 	"net/http"
 	"time"
 
-	"github.com/gorilla/handlers"
+	"github.com/sergunchig/merchant_exp.git/config"
+	offer "github.com/sergunchig/merchant_exp.git/internal/handlers/offers"
+	"github.com/sergunchig/merchant_exp.git/internal/repo"
+	"github.com/sergunchig/merchant_exp.git/pkg/logger"
+	"github.com/sergunchig/merchant_exp.git/pkg/postgres"
 )
 
 func Run(cfg *config.Config) {
@@ -30,28 +30,27 @@ func Run(cfg *config.Config) {
 		panic(fmt.Errorf("potgres error, %w", err))
 	}
 	defer db.Close()
-	offerRepo := repo.New(db)
-
-	offerhandler := handlers.New(offerRepo)
+	offerRepo := repo.New(db, log)
+	offerhandler := offer.New(offerRepo, log)
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", offerhandler.HomeHandler)
 	mux.HandleFunc("/upload", offerhandler.UploadHandler)
-	fmt.Println(s.cfg.HOST)
+	fmt.Println(cfg.HTTP.HOST)
 	srv := &http.Server{
 		Addr:    cfg.HTTP.HOST,
 		Handler: mux,
 	}
-
+	err = srv.ListenAndServe()
 	fmt.Println("server was started...")
 	if err != nil {
-		fmt.Println(err)
+		panic(fmt.Errorf("server can't start %w", err))
 	}
 
 	<-ctx.Done()
 
-	srv.Shutdown()
+	srv.Shutdown(ctx)
 
 	fmt.Println("app was stoped")
 }

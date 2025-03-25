@@ -3,12 +3,13 @@ package repo
 import (
 	"context"
 	"fmt"
-	"merchant_exp/internal/entity"
-	"merchant_exp/pkg/logger"
-	"merchant_exp/pkg/postgres"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
+
+	"github.com/sergunchig/merchant_exp.git/internal/entity"
+	"github.com/sergunchig/merchant_exp.git/pkg/logger"
+	"github.com/sergunchig/merchant_exp.git/pkg/postgres"
 )
 
 type OfferRepo struct {
@@ -37,14 +38,19 @@ func (r *OfferRepo) Create(ctx context.Context, offer entity.Offer) error {
 func (r *OfferRepo) CreateOffers(ctx context.Context, offers []entity.Offer) error {
 	var sb strings.Builder
 	sb.WriteString("insert into offers (offer_id , \"name\" , price , available ) values \n")
-	for _, offer := range offers {
-		sb.WriteString(fmt.Sprintf("(%d, %s, %f, %t),", offer.OfferId, offer.Name, offer.Price, offer.Available))
+	for i, offer := range offers {
+		sb.WriteString(fmt.Sprintf("(%d, %s, %f, %t)", offer.OfferId, offer.Name, offer.Price, offer.Available))
+		if i < len(offers) {
+			sb.WriteString(",\n")
+		}
 	}
 	sb.WriteString(";")
-	// err :=
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	query := sb.String()
+
+	_, err := r.client.Pool.Exec(ctx, query, nil)
+	if err != nil {
+		return fmt.Errorf("Create offers error %w", err)
+	}
 	return nil
 }
 func (r *OfferRepo) CreateOffersPipe(ctx context.Context, in <-chan entity.Offer) error {

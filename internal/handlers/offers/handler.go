@@ -7,8 +7,9 @@ import (
 	"log"
 	"net/http"
 
-	"merchant_exp/internal/entity"
-	"merchant_exp/internal/storage"
+	"github.com/sergunchig/merchant_exp.git/internal/entity"
+	"github.com/sergunchig/merchant_exp.git/internal/storage"
+	"github.com/sergunchig/merchant_exp.git/pkg/logger"
 )
 
 type repoOffers interface {
@@ -17,11 +18,13 @@ type repoOffers interface {
 
 type Handler struct {
 	offers repoOffers
+	log    *logger.AppLogger
 }
 
-func New(repo repoOffers) *Handler {
+func New(repo repoOffers, log *logger.AppLogger) *Handler {
 	return &Handler{
 		offers: repo,
+		log:    log,
 	}
 }
 

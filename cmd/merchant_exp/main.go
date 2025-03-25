@@ -1,8 +1,8 @@
 package main
 
 import (
-	"merchant_exp/config"
-	"merchant_exp/internal/app"
+	"github.com/sergunchig/merchant_exp.git/config"
+	"github.com/sergunchig/merchant_exp.git/internal/app"
 )
 
 func main() {

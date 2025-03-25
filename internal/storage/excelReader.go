@@ -4,11 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"merchant_exp/internal/entity"
-	"merchant_exp/pkg/logger"
 	"os"
 
 	"github.com/tealeg/xlsx/v3"
+
+	"github.com/sergunchig/merchant_exp.git/internal/entity"
+	"github.com/sergunchig/merchant_exp.git/pkg/logger"
 )
 
 type ExcelReaderObj struct {
@@ -16,7 +17,6 @@ type ExcelReaderObj struct {
 }
 
 func (er ExcelReaderObj) Read(file string) ([]entity.Offer, error) {
-
 	wb, err := xlsx.OpenFile(file)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("cant read file %s", file), err)
