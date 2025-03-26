@@ -1,10 +1,8 @@
-package storage
+package excel_reader
 
 import (
 	"errors"
 	"fmt"
-	"io"
-	"os"
 
 	"github.com/tealeg/xlsx/v3"
 
@@ -12,11 +10,17 @@ import (
 	"github.com/sergunchig/merchant_exp.git/pkg/logger"
 )
 
-type ExcelReaderObj struct {
+type ExcelReader struct {
 	log *logger.AppLogger
 }
 
-func (er ExcelReaderObj) Read(file string) ([]entity.Offer, error) {
+func New(log *logger.AppLogger) ExcelReader {
+	return ExcelReader{
+		log: log,
+	}
+}
+
+func (er ExcelReader) Read(file string) ([]entity.Offer, error) {
 	wb, err := xlsx.OpenFile(file)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("cant read file %s", file), err)
@@ -51,7 +55,7 @@ func (er ExcelReaderObj) Read(file string) ([]entity.Offer, error) {
 		return nil, fmt.Errorf(fmt.Sprintf("error read file %s", file), errors.New(""))
 	}
 }
-func (er ExcelReaderObj) ReadAsync(file string) (<-chan entity.Offer, error) {
+func (er ExcelReader) ReadAsync(file string) (<-chan entity.Offer, error) {
 	out := make(chan entity.Offer, 10)
 
 	wb, err := xlsx.OpenFile(file)
@@ -86,18 +90,4 @@ func (er ExcelReaderObj) ReadAsync(file string) (<-chan entity.Offer, error) {
 	}()
 
 	return out, nil
-}
-
-func SaveFile(in io.Reader, fileName string) error {
-	copyname := fmt.Sprintf("./storage/%s", fileName)
-	newFile, err := os.Create(copyname)
-	defer newFile.Close()
-	if err != nil {
-		return fmt.Errorf("can't create file %w", err)
-	}
-	_, err = io.Copy(newFile, in)
-	if err != nil {
-		return fmt.Errorf("Can't copy file %w", err)
-	}
-	return nil
 }

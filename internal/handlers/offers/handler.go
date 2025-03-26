@@ -2,7 +2,6 @@ package offer
 
 import (
 	"context"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -13,17 +12,22 @@ import (
 )
 
 type repoOffers interface {
-	GetOffers(ctx context.Context) ([]entity.Offer, error)
+	CreateOffers(ctx context.Context, offers []entity.Offer) error
+}
+type offersReader interface {
+	Read(file string) ([]entity.Offer, error)
 }
 
 type Handler struct {
 	offers repoOffers
+	reader offersReader
 	log    *logger.AppLogger
 }
 
-func New(repo repoOffers, log *logger.AppLogger) *Handler {
+func New(repo repoOffers, reader offersReader, log *logger.AppLogger) *Handler {
 	return &Handler{
 		offers: repo,
+		reader: reader,
 		log:    log,
 	}
 }
@@ -32,9 +36,9 @@ func (s *Handler) HomeHandler(rw http.ResponseWriter, r *http.Request) {
 	html := `<html>
 	<body>
 	<div>
-		<form action="/upload" method="post" enctype="multipart/form-data">
+		<form action="/UploadAndImport" method="post" enctype="multipart/form-data">
 			Excel file: <input type="file" name="my_file">
-			<input type="submit" value="Upload">
+			<input type="submit" value="Import">
 		</form>
 	</div>
 	</body>
@@ -43,12 +47,11 @@ func (s *Handler) HomeHandler(rw http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.New("loadpage").Parse(html))
 
 	err := tmpl.Execute(rw, nil)
-
 	if err != nil {
 
 	}
 }
-func (h *Handler) UploadHandler(rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Request) {
 	uploadData, _, err := r.FormFile("my_file")
 	if err != nil {
 		log.Println("cant parse file", err)
@@ -56,9 +59,27 @@ func (h *Handler) UploadHandler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer uploadData.Close()
-	fmt.Println("upload")
-	err = storage.SaveFile(uploadData, "excelfile.xlsx")
+
+	file := "./storage/excelfile.xlsx"
+	err = storage.SaveFile(uploadData, file)
 	if err != nil {
-		fmt.Println(err)
+		h.log.Error(err.Error())
+		rw.Write([]byte(err.Error()))
+		return
 	}
+	offers, err := h.reader.Read(file)
+
+	if err != nil {
+		h.log.Error(err.Error())
+		rw.Write([]byte(err.Error()))
+		return
+	}
+
+	err = h.offers.CreateOffers(r.Context(), offers)
+	if err != nil {
+		h.log.Error(err.Error())
+		rw.Write([]byte(err.Error()))
+		return
+	}
+	rw.Write([]byte("Offers import is successfully"))
 }

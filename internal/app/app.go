@@ -9,6 +9,7 @@ import (
 	"github.com/sergunchig/merchant_exp.git/config"
 	offer "github.com/sergunchig/merchant_exp.git/internal/handlers/offers"
 	"github.com/sergunchig/merchant_exp.git/internal/repo"
+	"github.com/sergunchig/merchant_exp.git/internal/storage/excel_reader"
 	"github.com/sergunchig/merchant_exp.git/pkg/logger"
 	"github.com/sergunchig/merchant_exp.git/pkg/postgres"
 )
@@ -31,22 +32,25 @@ func Run(cfg *config.Config) {
 	}
 	defer db.Close()
 	offerRepo := repo.New(db, log)
-	offerhandler := offer.New(offerRepo, log)
+	excelReader := excel_reader.New(log)
+	offerhandler := offer.New(offerRepo, excelReader, log)
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", offerhandler.HomeHandler)
-	mux.HandleFunc("/upload", offerhandler.UploadHandler)
+	mux.HandleFunc("/UploadAndImport", offerhandler.UploadAndImportHandler)
 	fmt.Println(cfg.HTTP.HOST)
 	srv := &http.Server{
 		Addr:    cfg.HTTP.HOST,
 		Handler: mux,
 	}
-	err = srv.ListenAndServe()
-	fmt.Println("server was started...")
-	if err != nil {
-		panic(fmt.Errorf("server can't start %w", err))
-	}
+	go func() {
+		err = srv.ListenAndServe()
+		fmt.Println("server was started...")
+		if err != nil {
+			panic(fmt.Errorf("server can't start %w", err))
+		}
+	}()
 
 	<-ctx.Done()
 
