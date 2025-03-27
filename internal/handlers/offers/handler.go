@@ -8,7 +8,6 @@ import (
 
 	"github.com/sergunchig/merchant_exp.git/internal/entity"
 	"github.com/sergunchig/merchant_exp.git/internal/storage"
-	"github.com/sergunchig/merchant_exp.git/pkg/logger"
 )
 
 type repoOffers interface {
@@ -17,14 +16,17 @@ type repoOffers interface {
 type offersReader interface {
 	Read(file string) ([]entity.Offer, error)
 }
+type offerLogger interface {
+	Error(msg string)
+}
 
 type Handler struct {
 	offers repoOffers
 	reader offersReader
-	log    *logger.AppLogger
+	log    offerLogger
 }
 
-func New(repo repoOffers, reader offersReader, log *logger.AppLogger) *Handler {
+func New(repo repoOffers, reader offersReader, log offerLogger) *Handler {
 	return &Handler{
 		offers: repo,
 		reader: reader,

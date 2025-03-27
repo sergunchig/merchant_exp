@@ -20,13 +20,6 @@ func New(pg *postgres.Postgress, log *logger.AppLogger) *OfferRepo {
 }
 
 func (r *OfferRepo) Create(ctx context.Context, offer entity.Offer) error {
-	// query := "insert into offers (offer_id , \"name\" , price , available ) values (@offer_id, @name, @price, @available)"
-	// args := pgx.NamedArgs{
-	// 	"offer_id":  offer.OfferId,
-	// 	"name":      offer.Name,
-	// 	"price":     offer.Price,
-	// 	"available": offer.Available,
-	// }
 
 	query := fmt.Sprintf("insert into offers (offer_id , \"name\" , price , available ) values (%d, %s, %f, %t)", offer.OfferId, offer.Name, offer.Price, offer.Available)
 
