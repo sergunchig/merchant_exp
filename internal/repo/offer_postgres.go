@@ -53,13 +53,6 @@ func (r *OfferRepo) CreateOffers(ctx context.Context, offers []entity.Offer) err
 	result := tx.SendBatch(ctx, &bach)
 	defer result.Close()
 
-	for i := 0; i < len(offers); i++ {
-		_, err := result.Exec()
-		if err != nil {
-			r.log.Error(fmt.Errorf("error executing %w", err).Error())
-		}
-	}
-
 	if err := tx.Commit(ctx); err != nil {
 		r.log.Error(fmt.Errorf("error committing %w", err).Error())
 	}
