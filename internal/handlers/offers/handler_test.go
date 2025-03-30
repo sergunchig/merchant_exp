@@ -29,7 +29,8 @@ func (r repoOffersMock) CreateOffers(ctx context.Context, offers []entity.Offer)
 	return nil
 }
 func (r repoOffersMock) GetOffers(ctx context.Context) ([]entity.Offer, error) {
-	return generateOffers(), nil
+	args := r.Called(ctx)
+	return args.Get(0).([]entity.Offer), args.Error(1)
 }
 
 func generateOffers() []entity.Offer {
@@ -48,13 +49,13 @@ func (l appLoggerMock) Error(msg string) {
 }
 
 func TestGetOffersHandler(t *testing.T) {
-	//ctx := context.Background()
+	ctx := context.Background()
 	//offers := generateOffers()
 
 	reader := new(excelReaderMock)
 
 	repo := new(repoOffersMock)
-	//repo.On("GetOffers", ctx).Return(offers, nil)
+	repo.On("GetOffers", ctx).Return([]entity.Offer{entity.Offer{OfferId: 5, Name: "badger", Price: 100, Available: true}}, nil)
 
 	log := new(appLoggerMock)
 
