@@ -20,7 +20,7 @@ func Run(cfg *config.Config) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5) //WithCancel(context.Background())
 	defer cancel()
 
-	log, err := logger.NewLogger(cfg.Log.FILE)
+	log, err := logger.NewLogger(cfg.Log.PATH)
 
 	if err != nil {
 		panic(fmt.Errorf("logger error, %w", err))

@@ -22,7 +22,7 @@ type (
 		HOST string
 	}
 	Log struct {
-		FILE string
+		PATH string
 	}
 	DB struct {
 		DBCONNECTION string
@@ -43,13 +43,13 @@ func NewConfig() (*Config, error) {
 
 	host := os.Getenv("HOST")
 	db := os.Getenv("DBCONNECTION")
-	logfile := os.Getenv("LOGFILE")
+	logPath := os.Getenv("LOGPATH")
 	fileStorage := os.Getenv("FILESTORAGE")
 
 	cfg := &Config{
 		HTTP:    HTTP{HOST: host},
 		DB:      DB{DBCONNECTION: db},
-		Log:     Log{FILE: logfile},
+		Log:     Log{PATH: logPath},
 		Storage: FileStorage{PATH: fileStorage},
 	}
 	return cfg, nil
