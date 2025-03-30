@@ -2,6 +2,8 @@ package offer
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -12,6 +14,7 @@ import (
 
 type repoOffers interface {
 	CreateOffers(ctx context.Context, offers []entity.Offer) error
+	GetOffers(ctx context.Context) ([]entity.Offer, error)
 }
 type offersReader interface {
 	Read(file string) ([]entity.Offer, error)
@@ -84,4 +87,24 @@ func (h *Handler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Request
 		return
 	}
 	rw.Write([]byte("Offers import is successfully"))
+}
+func (h *Handler) GetOffers(rw http.ResponseWriter, r *http.Request) {
+
+	offers, err := h.offers.GetOffers(r.Context())
+	if err != nil {
+		h.log.Error(err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("status 500"))
+		return
+	}
+	data, err := json.Marshal(offers)
+	if err != nil {
+		h.log.Error(fmt.Errorf("json marshal error: %w", err).Error())
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("status 500"))
+		return
+	}
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
+	rw.Write(data)
 }

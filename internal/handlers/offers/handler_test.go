@@ -28,6 +28,16 @@ type repoOffersMock struct {
 func (r repoOffersMock) CreateOffers(ctx context.Context, offers []entity.Offer) error {
 	return nil
 }
+func (r repoOffersMock) GetOffers(ctx context.Context) ([]entity.Offer, error) {
+	return generateOffers(), nil
+}
+
+func generateOffers() []entity.Offer {
+	return []entity.Offer{
+		entity.Offer{OfferId: 1, Name: "cat", Price: 10, Available: true},
+		entity.Offer{OfferId: 2, Name: "dog", Price: 13, Available: false},
+	}
+}
 
 type appLoggerMock struct {
 	mock.Mock
@@ -35,6 +45,29 @@ type appLoggerMock struct {
 
 func (l appLoggerMock) Error(msg string) {
 	fmt.Println(msg)
+}
+
+func TestGetOffersHandler(t *testing.T) {
+	//ctx := context.Background()
+	//offers := generateOffers()
+
+	reader := new(excelReaderMock)
+
+	repo := new(repoOffersMock)
+	//repo.On("GetOffers", ctx).Return(offers, nil)
+
+	log := new(appLoggerMock)
+
+	handler := New(repo, reader, log)
+
+	req, _ := http.NewRequest(http.MethodGet, "/getoffers", nil)
+	rr := httptest.NewRecorder()
+
+	handler.GetOffers(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("staus %d", status)
+	}
 }
 
 func TestUploadAndImportHandler(t *testing.T) {
