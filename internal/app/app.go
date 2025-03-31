@@ -17,11 +17,10 @@ import (
 func Run(cfg *config.Config) {
 	fmt.Println("start project...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5) //WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	log, err := logger.NewLogger(cfg.Log.PATH)
-
 	if err != nil {
 		panic(fmt.Errorf("logger error, %w", err))
 	}
@@ -31,17 +30,18 @@ func Run(cfg *config.Config) {
 		panic(fmt.Errorf("potgres error, %w", err))
 	}
 	defer db.Close()
+
 	offerRepo := repo.New(db, log)
+	//пакеты кэмелкейсом
 	excelReader := excel_reader.New(log)
 	offerhandler := offer.New(offerRepo, excelReader, log)
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", offerhandler.HomeHandler)
-	mux.HandleFunc("/UploadAndImport", offerhandler.UploadAndImportHandler)
-	mux.HandleFunc("/getoffers", offerhandler.GetOffers)
+	mux.HandleFunc("/upload_and_import", offerhandler.UploadAndImportHandler)
+	mux.HandleFunc("/get_offers", offerhandler.GetOffers)
 
-	fmt.Println(cfg.HTTP.HOST)
 	srv := &http.Server{
 		Addr:    cfg.HTTP.HOST,
 		Handler: mux,
@@ -55,8 +55,11 @@ func Run(cfg *config.Config) {
 	}()
 
 	<-ctx.Done()
-
-	srv.Shutdown(ctx)
+	shutdownCtx, closeFunc := context.WithTimeout(context.Background(), time.Minute)
+	defer closeFunc()
+	//nolint:errcheck
+	srv.Shutdown(shutdownCtx)
+	//log
 
 	fmt.Println("app was stoped")
 }

@@ -59,6 +59,7 @@ func (r *OfferRepo) CreateOffers(ctx context.Context, offers []entity.Offer) err
 
 	return nil
 }
+
 func (r *OfferRepo) CreateOffersPipe(ctx context.Context, in <-chan entity.Offer) error {
 
 	for offer := range in {
@@ -69,21 +70,22 @@ func (r *OfferRepo) CreateOffersPipe(ctx context.Context, in <-chan entity.Offer
 	}
 	return nil
 }
+
 func (r *OfferRepo) GetOffers(ctx context.Context) ([]entity.Offer, error) {
 	query := "select offer_id, \"name\", price, available  from offers"
 
 	rows, err := r.client.Pool.Query(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("Error query %w", err)
+		return nil, fmt.Errorf("error query %w", err)
 	}
 
 	defer rows.Close()
-	offers := make([]entity.Offer, 0)
+	offers := make([]entity.Offer, 0, 10000)
 
 	for rows.Next() {
 		var offer entity.Offer
 		if err := rows.Scan(&offer.OfferId, &offer.Name, &offer.Price, &offer.Available); err != nil {
-			return nil, fmt.Errorf("Error row scan %w", err)
+			return nil, fmt.Errorf("error row scan %w", err)
 		}
 		offers = append(offers, offer)
 	}

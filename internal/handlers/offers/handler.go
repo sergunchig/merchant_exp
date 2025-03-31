@@ -1,3 +1,4 @@
+//go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
 package offer
 
 import (
@@ -5,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 
 	"github.com/sergunchig/merchant_exp.git/internal/entity"
@@ -59,14 +59,14 @@ func (s *Handler) HomeHandler(rw http.ResponseWriter, r *http.Request) {
 func (h *Handler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Request) {
 	uploadData, _, err := r.FormFile("my_file")
 	if err != nil {
-		log.Println("cant parse file", err)
+		h.log.Error(fmt.Errorf("cant parse file %w", err).Error())
 		http.Error(rw, "request error", http.StatusInternalServerError)
 		return
 	}
 	defer uploadData.Close()
 
 	file := "./storage/excelfile.xlsx"
-	err = storage.SaveFile(uploadData, file)
+	err = storage.SaveFile(uploadData, file) //mock
 	if err != nil {
 		h.log.Error(err.Error())
 		rw.Write([]byte(err.Error()))
@@ -88,6 +88,8 @@ func (h *Handler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Request
 	}
 	rw.Write([]byte("Offers import is successfully"))
 }
+
+// todo viewmodel
 func (h *Handler) GetOffers(rw http.ResponseWriter, r *http.Request) {
 
 	offers, err := h.offers.GetOffers(r.Context())
