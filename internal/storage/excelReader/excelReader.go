@@ -1,4 +1,4 @@
-package excel_reader
+package excelReader
 
 import (
 	"errors"

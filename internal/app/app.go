@@ -7,9 +7,10 @@ import (
 	"time"
 
 	"github.com/sergunchig/merchant_exp.git/config"
+	offerServices "github.com/sergunchig/merchant_exp.git/internal/Services"
 	offer "github.com/sergunchig/merchant_exp.git/internal/handlers/offers"
 	"github.com/sergunchig/merchant_exp.git/internal/repo"
-	"github.com/sergunchig/merchant_exp.git/internal/storage/excel_reader"
+	"github.com/sergunchig/merchant_exp.git/internal/storage/excelReader"
 	"github.com/sergunchig/merchant_exp.git/pkg/logger"
 	"github.com/sergunchig/merchant_exp.git/pkg/postgres"
 )
@@ -33,14 +34,15 @@ func Run(cfg *config.Config) {
 
 	offerRepo := repo.New(db, log)
 	//пакеты кэмелкейсом
-	excelReader := excel_reader.New(log)
-	offerhandler := offer.New(offerRepo, excelReader, log)
+	excelReader := excelReader.New(log)
+	offerService := offerServices.New(offerRepo, log)
+	offerhandler := offer.New(offerService, excelReader, log)
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", offerhandler.HomeHandler)
-	mux.HandleFunc("/upload_and_import", offerhandler.UploadAndImportHandler)
-	mux.HandleFunc("/get_offers", offerhandler.GetOffers)
+	//mux.HandleFunc("/upload_and_import", offerhandler.UploadAndImportHandler)
+	mux.HandleFunc("/get_offers", offerhandler.GetOffersAsync)
 
 	srv := &http.Server{
 		Addr:    cfg.HTTP.HOST,

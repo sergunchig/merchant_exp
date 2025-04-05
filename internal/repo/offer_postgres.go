@@ -93,31 +93,41 @@ func (r *OfferRepo) Read(ctx context.Context) ([]entity.Offer, error) {
 	return offers, nil
 }
 
-func (r *OfferRepo) ReadAsync(ctx context.Context) (chan<- entity.Offer, chan<- error) {
+func (r *OfferRepo) ReadAsync(ctx context.Context) (<-chan entity.Offer, <-chan error) {
 	in := make(chan entity.Offer)
-	errCh := make(chan error)
+	doneCh := make(chan error)
 
 	query := "select offer_id, \"name\", price, available  from offers"
 
 	go func() {
+		defer close(in)
+		defer close(doneCh)
+
 		rows, err := r.client.Pool.Query(ctx, query)
 		if err != nil {
-			errCh <- fmt.Errorf("error query %w", err)
+			doneCh <- fmt.Errorf("error query %w", err)
 		}
 		defer rows.Close()
 
 		for rows.Next() {
 			var offer entity.Offer
 			if err := rows.Scan(&offer.OfferId, &offer.Name, &offer.Price, &offer.Available); err != nil {
-				errCh <- fmt.Errorf("error row scan %w", err)
+				doneCh <- fmt.Errorf("error row scan %w", err)
 			}
 			in <- offer
 		}
+		doneCh <- nil
 	}()
 
-	return in, errCh
+	return in, doneCh
 }
 
-func (r *OfferRepo) GetOffer(offer_id int) (entity.Offer, error) {
-	return entity.Offer{}, nil
+func (r *OfferRepo) GetOffer(ctx context.Context, offer_id int) (*entity.Offer, error) {
+	query := fmt.Sprintf("select o.offer_id, o.\"name\", o.price, o.available  from offers o where o.offer_id = %d", offer_id)
+	o := &entity.Offer{}
+	err := r.client.Pool.QueryRow(ctx, query).Scan(o.OfferId, o.Name, o.Price, o.Available)
+	if err != nil {
+		return nil, fmt.Errorf("error select offer_id = %d %w", offer_id, err)
+	}
+	return o, nil
 }
