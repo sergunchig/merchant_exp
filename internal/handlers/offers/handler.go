@@ -68,6 +68,12 @@ func (h *Handler) GetOffersAsync(rw http.ResponseWriter, r *http.Request) {
 		rw.Write([]byte(err.Error()))
 	}
 	json, err := json.Marshal(offers)
+	if err != nil {
+		err = fmt.Errorf("error marshaled offers %w", err)
+		h.log.Error(err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte(err.Error()))
+	}
 	rw.Write(json)
 }
 
