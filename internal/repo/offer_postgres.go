@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/sergunchig/merchant_exp.git/internal/entity"
@@ -29,7 +30,7 @@ func (r *OfferRepo) Create(ctx context.Context, offer entity.Offer) error {
 	}
 	return nil
 }
-func (r *OfferRepo) CreateOffers(ctx context.Context, offers []entity.Offer) error {
+func (r *OfferRepo) CreateOffersBach(ctx context.Context, offers []entity.Offer) error {
 
 	bach := pgx.Batch{}
 
@@ -60,13 +61,44 @@ func (r *OfferRepo) CreateOffers(ctx context.Context, offers []entity.Offer) err
 	return nil
 }
 
-func (r *OfferRepo) CreateOffersPipe(ctx context.Context, in <-chan entity.Offer) error {
+func (r *OfferRepo) CreateOffers(ctx context.Context, offers []entity.Offer) error {
+	baseQuery := "insert into offers (offer_id , \"name\" , price , available ) values \n"
+	builder := strings.Builder{}
+	builder.WriteString(baseQuery)
+	for _, offer := range offers {
+		builder.WriteString(fmt.Sprintf("(%d, '%s', %f, %t),", offer.OfferId, offer.Name, offer.Price, offer.Available))
+	}
+	qs := builder.String()
+	r.log.Info(qs)
+	runeArr := []rune(builder.String())
+	runeArr[len(runeArr)] = ';'
 
+	_, err := r.client.Pool.Exec(ctx, string(runeArr), nil)
+	if err != nil {
+		err = fmt.Errorf("error write to db %w", err)
+		r.log.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+func (r *OfferRepo) CreateOffersAsync(ctx context.Context, in <-chan entity.Offer) error {
+	baseQuery := "insert into offers (offer_id , \"name\" , price , available ) values \n"
+	builder := strings.Builder{}
+	builder.WriteString(baseQuery)
 	for offer := range in {
-		err := r.Create(ctx, offer)
-		if err != nil {
-			fmt.Println(err)
-		}
+		builder.WriteString(fmt.Sprintf("(%d, '%s', %f, %t),", offer.OfferId, offer.Name, offer.Price, offer.Available))
+	}
+	qs := builder.String()
+	r.log.Info(qs)
+	runeArr := []rune(builder.String())
+	runeArr[len(runeArr)] = ';'
+
+	_, err := r.client.Pool.Exec(ctx, string(runeArr), nil)
+	if err != nil {
+		err = fmt.Errorf("error write to db %w", err)
+		r.log.Error(err.Error())
+		return err
 	}
 	return nil
 }

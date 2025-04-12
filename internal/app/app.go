@@ -7,8 +7,11 @@ import (
 	"time"
 
 	"github.com/sergunchig/merchant_exp.git/config"
-	offerServices "github.com/sergunchig/merchant_exp.git/internal/Services"
-	offer "github.com/sergunchig/merchant_exp.git/internal/handlers/offers"
+	"github.com/sergunchig/merchant_exp.git/internal/Services/readOfferServices"
+	"github.com/sergunchig/merchant_exp.git/internal/Services/writeService"
+	handler "github.com/sergunchig/merchant_exp.git/internal/handlers/offers"
+	importHandler "github.com/sergunchig/merchant_exp.git/internal/handlers/offers/ImportHandler"
+	"github.com/sergunchig/merchant_exp.git/internal/handlers/offers/readHandler"
 	"github.com/sergunchig/merchant_exp.git/internal/repo"
 	"github.com/sergunchig/merchant_exp.git/internal/storage/excelReader"
 	"github.com/sergunchig/merchant_exp.git/pkg/logger"
@@ -33,16 +36,19 @@ func Run(cfg *config.Config) {
 	defer db.Close()
 
 	offerRepo := repo.New(db, log)
-	//пакеты кэмелкейсом
 	excelReader := excelReader.New(log)
-	offerService := offerServices.New(offerRepo, log)
-	offerhandler := offer.New(offerService, excelReader, log)
+	readService := readOfferServices.New(offerRepo, log)
+	writeService := writeService.New(excelReader, offerRepo, log)
+
+	offerhandler := handler.New(log)
+	readHandler := readHandler.New(readService, log)
+	importHandler := importHandler.New(writeService, log)
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", offerhandler.HomeHandler)
-	//mux.HandleFunc("/upload_and_import", offerhandler.UploadAndImportHandler)
-	mux.HandleFunc("/get_offers", offerhandler.GetOffersAsync)
+	mux.HandleFunc("/uploadandimport/", importHandler.UploadAndImportHandler)
+	mux.HandleFunc("/getoffers/", readHandler.GetOffersAsync)
 
 	srv := &http.Server{
 		Addr:    cfg.HTTP.HOST,
@@ -60,8 +66,10 @@ func Run(cfg *config.Config) {
 	shutdownCtx, closeFunc := context.WithTimeout(context.Background(), time.Minute)
 	defer closeFunc()
 	//nolint:errcheck
-	srv.Shutdown(shutdownCtx)
-	//log
+	err = srv.Shutdown(shutdownCtx)
+	if err != nil {
+		log.Error(fmt.Errorf("error shutdown %w", err).Error())
+	}
 
 	fmt.Println("app was stoped")
 }

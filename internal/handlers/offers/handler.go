@@ -1,40 +1,23 @@
 //go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
-package offer
+package handler
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
-
-	offerServices "github.com/sergunchig/merchant_exp.git/internal/Services"
-	"github.com/sergunchig/merchant_exp.git/internal/entity"
 )
 
-type readOfferService interface {
-	GetOffersAsync(ctx context.Context) ([]offerServices.OfferDto, error)
-}
-
-type excelOffersReader interface {
-	Read(file string) ([]entity.Offer, error)
-}
 type offerLogger interface {
 	Error(msg string)
 }
 
 type Handler struct {
-	service readOfferService
-	reader  excelOffersReader
-	log     offerLogger
+	log offerLogger
 }
 
-func New(service readOfferService, reader excelOffersReader, log offerLogger) *Handler {
+func New(log offerLogger) *Handler {
 	return &Handler{
-		//offers: repo,
-		service: service,
-		reader:  reader,
-		log:     log,
+		log: log,
 	}
 }
 
@@ -42,7 +25,7 @@ func (s *Handler) HomeHandler(rw http.ResponseWriter, r *http.Request) {
 	html := `<html>
 	<body>
 	<div>
-		<form action="/UploadAndImport" method="post" enctype="multipart/form-data">
+		<form action="/uploadandimport" method="post" enctype="multipart/form-data">
 			Excel file: <input type="file" name="my_file">
 			<input type="submit" value="Import">
 		</form>
@@ -59,40 +42,8 @@ func (s *Handler) HomeHandler(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) GetOffersAsync(rw http.ResponseWriter, r *http.Request) {
-	offers, err := h.service.GetOffersAsync(r.Context())
-
-	if err != nil {
-		h.log.Error(err.Error())
-		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte(err.Error()))
-	}
-	json, err := json.Marshal(offers)
-	if err != nil {
-		err = fmt.Errorf("error marshaled offers %w", err)
-		h.log.Error(err.Error())
-		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte(err.Error()))
-	}
-	rw.Write(json)
-}
-
 // func (h *Handler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Request) {
-// 	uploadData, _, err := r.FormFile("my_file")
-// 	if err != nil {
-// 		h.log.Error(fmt.Errorf("cant parse file %w", err).Error())
-// 		http.Error(rw, "request error", http.StatusInternalServerError)
-// 		return
-// 	}
-// 	defer uploadData.Close()
 
-// 	file := "./storage/excelfile.xlsx"
-// 	err = storage.SaveFile(uploadData, file) //mock
-// 	if err != nil {
-// 		h.log.Error(err.Error())
-// 		rw.Write([]byte(err.Error()))
-// 		return
-// 	}
 // 	offers, err := h.reader.Read(file)
 
 // 	if err != nil {

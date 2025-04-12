@@ -1,6 +1,8 @@
+//go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
 package excelReader
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -14,8 +16,8 @@ type ExcelReader struct {
 	log *logger.AppLogger
 }
 
-func New(log *logger.AppLogger) ExcelReader {
-	return ExcelReader{
+func New(log *logger.AppLogger) *ExcelReader {
+	return &ExcelReader{
 		log: log,
 	}
 }
@@ -55,29 +57,32 @@ func (er ExcelReader) Read(file string) ([]entity.Offer, error) {
 		return nil, fmt.Errorf(fmt.Sprintf("error read file %s", file), errors.New(""))
 	}
 }
-func (er ExcelReader) ReadAsync(file string) (<-chan entity.Offer, error) {
+func (er ExcelReader) ReadAsync(ctx context.Context, done func(), file string) (<-chan entity.Offer, error) {
+
 	out := make(chan entity.Offer, 10)
 
 	wb, err := xlsx.OpenFile(file)
 	if err != nil {
-		return nil, fmt.Errorf("file can't open %w", err)
+		return nil, fmt.Errorf("error open excel file: %w", err)
 	}
 	sheet := wb.Sheets[0]
 
 	go func() {
-		defer close(out)
 		for i := 1; i < sheet.MaxRow; i++ {
 			r, err := sheet.Row(i)
 			if err != nil {
-				continue
+				done()
+				return
 			}
 			id, err := r.GetCell(0).Int()
 			if err != nil {
-				continue
+				done()
+				return
 			}
 			price, err := r.GetCell(2).Float()
 			if err != nil {
-				continue
+				done()
+				return
 			}
 
 			out <- entity.Offer{
@@ -87,7 +92,7 @@ func (er ExcelReader) ReadAsync(file string) (<-chan entity.Offer, error) {
 				Available: r.GetCell(3).Bool(),
 			}
 		}
+		close(out)
 	}()
-
 	return out, nil
 }

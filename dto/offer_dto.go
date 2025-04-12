@@ -1,4 +1,4 @@
-package offerServices
+package dto
 
 import "github.com/sergunchig/merchant_exp.git/internal/entity"
 

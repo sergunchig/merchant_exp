@@ -1,8 +1,10 @@
-package offerServices
+//go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
+package readOfferServices
 
 import (
 	"context"
 
+	"github.com/sergunchig/merchant_exp.git/dto"
 	"github.com/sergunchig/merchant_exp.git/internal/entity"
 	"github.com/sergunchig/merchant_exp.git/pkg/logger"
 )
@@ -23,22 +25,14 @@ func New(repo repoOffers, log *logger.AppLogger) *OfferService {
 	}
 }
 
-func (o *OfferService) GetOffersAsync(ctx context.Context) ([]OfferDto, error) {
+func (o *OfferService) GetOffersAsync(ctx context.Context) ([]dto.OfferDto, error) {
 	offerCh, errCh := o.repo.ReadAsync(ctx)
 	offers, err := o.offersAsync(ctx, offerCh, errCh)
 	return offers, err
 }
 
-// func (o *OfferService) offers(offers []entity.Offer) []OfferDto {
-// 	offersDto := make([]OfferDto, 0, len(offers))
-// 	for _, offer := range offers {
-// 		offersDto = append(offersDto, OfferDto(offer))
-// 	}
-// 	return offersDto
-// }
-
-func (o *OfferService) offersAsync(ctx context.Context, out <-chan entity.Offer, errCh <-chan error) ([]OfferDto, error) {
-	offersDto := make([]OfferDto, 0, 1000)
+func (o *OfferService) offersAsync(ctx context.Context, out <-chan entity.Offer, errCh <-chan error) ([]dto.OfferDto, error) {
+	offersDto := make([]dto.OfferDto, 0, 1000)
 
 	var inprocess bool = false
 	var err error = nil
@@ -46,7 +40,7 @@ func (o *OfferService) offersAsync(ctx context.Context, out <-chan entity.Offer,
 	for inprocess {
 		select {
 		case offer := <-out:
-			offersDto = append(offersDto, MakeOfferDisplay(offer))
+			offersDto = append(offersDto, dto.MakeOfferDisplay(offer))
 		case err = <-errCh:
 			inprocess = false
 		case <-ctx.Done():
