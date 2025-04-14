@@ -4,9 +4,8 @@ package importHandler
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
-
-	"github.com/sergunchig/merchant_exp.git/internal/storage"
 )
 
 type offerLogger interface {
@@ -15,16 +14,21 @@ type offerLogger interface {
 type importServices interface {
 	ImportOffers(ctx context.Context, file string) error
 }
+type storageService interface {
+	SaveFile(in io.Reader, fileName string) error
+}
 
 type WriteHandler struct {
 	service importServices
 	log     offerLogger
+	storage storageService
 }
 
-func New(service importServices, log offerLogger) *WriteHandler {
+func New(service importServices, storage storageService, log offerLogger) *WriteHandler {
 	return &WriteHandler{
 		service: service,
 		log:     log,
+		storage: storage,
 	}
 }
 
@@ -38,7 +42,7 @@ func (h *WriteHandler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Re
 	defer uploadData.Close()
 
 	file := "./storage/excelfile.xlsx"
-	err = storage.SaveFile(uploadData, file) //mock
+	err = h.storage.SaveFile(uploadData, file) //mock
 	if err != nil {
 		h.log.Error(err.Error())
 		rw.Write([]byte(err.Error()))

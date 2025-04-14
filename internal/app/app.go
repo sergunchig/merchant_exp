@@ -13,6 +13,7 @@ import (
 	importHandler "github.com/sergunchig/merchant_exp.git/internal/handlers/offers/ImportHandler"
 	"github.com/sergunchig/merchant_exp.git/internal/handlers/offers/readHandler"
 	"github.com/sergunchig/merchant_exp.git/internal/repo"
+	"github.com/sergunchig/merchant_exp.git/internal/storage"
 	"github.com/sergunchig/merchant_exp.git/internal/storage/excelReader"
 	"github.com/sergunchig/merchant_exp.git/pkg/logger"
 	"github.com/sergunchig/merchant_exp.git/pkg/postgres"
@@ -39,10 +40,11 @@ func Run(cfg *config.Config) {
 	excelReader := excelReader.New(log)
 	readService := readOfferServices.New(offerRepo, log)
 	writeService := writeService.New(excelReader, offerRepo, log)
+	storageService := storage.New(log)
 
 	offerhandler := handler.New(log)
 	readHandler := readHandler.New(readService, log)
-	importHandler := importHandler.New(writeService, log)
+	importHandler := importHandler.New(writeService, storageService, log)
 
 	mux := http.NewServeMux()
 
