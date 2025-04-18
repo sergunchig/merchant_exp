@@ -33,7 +33,7 @@ func New(service importServices, storage storageService, log offerLogger) *Write
 }
 
 func (h *WriteHandler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Request) {
-	uploadData, _, err := r.FormFile("my_file")
+	uploadData, _, err := r.FormFile("file")
 	if err != nil {
 		h.log.Error(fmt.Errorf("cant parse file %w", err).Error())
 		http.Error(rw, "request error", http.StatusInternalServerError)
@@ -56,4 +56,6 @@ func (h *WriteHandler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Re
 		h.log.Error(err.Error())
 		return
 	}
+	rw.WriteHeader(http.StatusOK)
+	rw.Write([]byte("imported"))
 }
