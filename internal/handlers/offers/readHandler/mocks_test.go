@@ -12,7 +12,6 @@ package readHandler_test
 import (
 	context "context"
 	"fmt"
-	//"fmt"
 	"net/http"
 	"net/http/httptest"
 	reflect "reflect"
@@ -20,7 +19,6 @@ import (
 
 	dto "github.com/sergunchig/merchant_exp.git/dto"
 	"github.com/sergunchig/merchant_exp.git/internal/handlers/offers/readHandler"
-
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -48,19 +46,19 @@ func (m *MockreadService) EXPECT() *MockreadServiceMockRecorder {
 	return m.recorder
 }
 
-// GetOffersAsync mocks base method.
-func (m *MockreadService) GetOffersAsync(ctx context.Context) ([]dto.OfferDto, error) {
+// GetOffers mocks base method.
+func (m *MockreadService) GetOffers(ctx context.Context) ([]dto.OfferDto, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOffersAsync", ctx)
+	ret := m.ctrl.Call(m, "GetOffers", ctx)
 	ret0, _ := ret[0].([]dto.OfferDto)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetOffersAsync indicates an expected call of GetOffersAsync.
-func (mr *MockreadServiceMockRecorder) GetOffersAsync(ctx any) *gomock.Call {
+// GetOffers indicates an expected call of GetOffers.
+func (mr *MockreadServiceMockRecorder) GetOffers(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOffersAsync", reflect.TypeOf((*MockreadService)(nil).GetOffersAsync), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOffers", reflect.TypeOf((*MockreadService)(nil).GetOffers), ctx)
 }
 
 // MockofferLogger is a mock of offerLogger interface.
@@ -133,14 +131,14 @@ func TestReadHandler(t *testing.T){
 	hndlr := readHandler.New(service, log)
 
 	for _,test := range tests{
-		service.EXPECT().GetOffersAsync(ctx).Return(test.dtos, test.err).Times(1)	
+		service.EXPECT().GetOffers(ctx).Return(test.dtos, test.err).Times(1)	
 		rr := httptest.NewRecorder()
 		req, err := http.NewRequest(http.MethodGet, "/getoffers/", nil)
 		if err != nil {
 			t.Error()
 			continue
 		}
-		hndlr.GetOffersAsync(rr, req)
+		hndlr.GetOffers(rr, req)
 		t.Run(test.name, func(t *testing.T) {
 			if status := rr.Code; status != test.result {
 				t.Errorf("Returned status code %d", rr.Code)

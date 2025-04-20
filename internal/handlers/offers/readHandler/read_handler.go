@@ -11,7 +11,7 @@ import (
 )
 
 type readService interface {
-	GetOffersAsync(ctx context.Context) ([]dto.OfferDto, error)
+	GetOffers(ctx context.Context) ([]dto.OfferDto, error)
 }
 type offerLogger interface {
 	Error(msg string)
@@ -29,8 +29,8 @@ func New(service readService, log offerLogger) *ReadHandler {
 	}
 }
 
-func (h *ReadHandler) GetOffersAsync(rw http.ResponseWriter, r *http.Request) {
-	offers, err := h.service.GetOffersAsync(r.Context())
+func (h *ReadHandler) GetOffers(rw http.ResponseWriter, r *http.Request) {
+	offers, err := h.service.GetOffers(r.Context())
 
 	if err != nil {
 		h.log.Error(err.Error())

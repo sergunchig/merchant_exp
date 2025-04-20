@@ -1,5 +1,5 @@
 //go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
-package writeService
+package writeOffers
 
 import (
 	"context"
@@ -34,9 +34,6 @@ func New(reader excelReader, repo offerRepo, log logger) *WriteService {
 }
 
 func (ws *WriteService) ImportOffers(ctx context.Context, file string) error {
-	//cancelCtx, cancel := context.WithCancel(context.Background())
-	// ch, _ := ws.excelReader.ReadAsync(cancelCtx, cancel, file)
-	// err := ws.repo.CreateOffersAsync(cancelCtx, ch)
 	offers, err := ws.excelReader.Read(file)
 	if err != nil {
 		return err

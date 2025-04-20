@@ -26,7 +26,7 @@ func (s *Handler) HomeHandler(rw http.ResponseWriter, r *http.Request) {
 	<body>
 	<div>
 		<form action="/uploadandimport" method="post" enctype="multipart/form-data">
-			Excel file: <input type="file" name="my_file">
+			Excel file: <input type="file" name="file">
 			<input type="submit" value="Import">
 		</form>
 	</div>

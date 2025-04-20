@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/sergunchig/merchant_exp.git/config"
-	"github.com/sergunchig/merchant_exp.git/internal/Services/readOfferServices"
-	"github.com/sergunchig/merchant_exp.git/internal/Services/writeService"
 	handler "github.com/sergunchig/merchant_exp.git/internal/handlers/offers"
 	importHandler "github.com/sergunchig/merchant_exp.git/internal/handlers/offers/ImportHandler"
 	"github.com/sergunchig/merchant_exp.git/internal/handlers/offers/readHandler"
 	"github.com/sergunchig/merchant_exp.git/internal/repo"
+	"github.com/sergunchig/merchant_exp.git/internal/services/readOffers"
+	"github.com/sergunchig/merchant_exp.git/internal/services/writeOffers"
 	"github.com/sergunchig/merchant_exp.git/internal/storage"
 	"github.com/sergunchig/merchant_exp.git/internal/storage/excelReader"
 	"github.com/sergunchig/merchant_exp.git/pkg/logger"
@@ -38,8 +38,8 @@ func Run(cfg *config.Config) {
 
 	offerRepo := repo.New(db, log)
 	excelReader := excelReader.New(log)
-	readService := readOfferServices.New(offerRepo, log)
-	writeService := writeService.New(excelReader, offerRepo, log)
+	readService := readOffers.New(offerRepo, log)
+	writeService := writeOffers.New(excelReader, offerRepo, log)
 	storageService := storage.New(log)
 
 	offerhandler := handler.New(log)
@@ -49,8 +49,8 @@ func Run(cfg *config.Config) {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", offerhandler.HomeHandler)
-	mux.HandleFunc("/uploadandimport/", importHandler.UploadAndImportHandler)
-	mux.HandleFunc("/getoffers/", readHandler.GetOffersAsync)
+	mux.HandleFunc("/uploadandimport", importHandler.UploadAndImportHandler)
+	mux.HandleFunc("/getoffers/", readHandler.GetOffers)
 
 	srv := &http.Server{
 		Addr:    cfg.HTTP.HOST,

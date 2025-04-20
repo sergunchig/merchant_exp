@@ -172,8 +172,9 @@ func TestImportHandler(t *testing.T){
 		if err != nil{
 			t.Fatal(err.Error())
 		}
-		storageService.EXPECT().SaveFile(file, "file.xlsx").Times(1).Return(test.storageErr)
-		importService.EXPECT().ImportOffers(ctx,"file").Times(1).Return(test.importErr)
+		
+		storageService.EXPECT().SaveFile(file, "./storage/excelfile.xlsx").Return(test.storageErr).Times(1)
+		importService.EXPECT().ImportOffers(ctx,"./storage/excelfile.xlsx").Return(test.importErr).Times(1)
 		log.EXPECT().Error(gomock.Any()).AnyTimes()
 
 
