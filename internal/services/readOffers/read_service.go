@@ -11,6 +11,7 @@ import (
 
 type repoOffers interface {
 	Read(ctx context.Context) ([]entity.Offer, error)
+	GetOffer(ctx context.Context, offer_id int) (*entity.Offer, error)
 }
 
 type OfferService struct {
@@ -32,6 +33,13 @@ func (o *OfferService) GetOffers(ctx context.Context) ([]dto.OfferDto, error) {
 	}
 	offersDto, err := o.offersDto(offers)
 	return offersDto, err
+}
+func (o *OfferService) GetOffer(ctx context.Context, offer_id int) (dto.OfferDto, error) {
+	offer, err := o.repo.GetOffer(ctx, offer_id)
+	if err != nil {
+		return dto.OfferDto{}, err
+	}
+	return dto.MakeOfferDisplay(*offer), nil
 }
 
 func (o *OfferService) offersDto(offers []entity.Offer) ([]dto.OfferDto, error) {

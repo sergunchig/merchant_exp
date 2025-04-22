@@ -51,6 +51,7 @@ func Run(cfg *config.Config) {
 	mux.HandleFunc("/", offerhandler.HomeHandler)
 	mux.HandleFunc("/uploadandimport", importHandler.UploadAndImportHandler)
 	mux.HandleFunc("/getoffers/", readHandler.GetOffers)
+	mux.HandleFunc("/getoffer", readHandler.GetOffer)
 
 	srv := &http.Server{
 		Addr:    cfg.HTTP.HOST,

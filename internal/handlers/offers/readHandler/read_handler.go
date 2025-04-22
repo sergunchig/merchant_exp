@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/sergunchig/merchant_exp.git/dto"
 )
 
 type readService interface {
 	GetOffers(ctx context.Context) ([]dto.OfferDto, error)
+	GetOffer(ctx context.Context, offer_id int) (dto.OfferDto, error)
 }
 type offerLogger interface {
 	Error(msg string)
@@ -44,5 +46,30 @@ func (h *ReadHandler) GetOffers(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte(err.Error()))
 	}
+	rw.Write(json)
+}
+func (h *ReadHandler) GetOffer(rw http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+
+	if err != nil {
+		h.log.Error(err.Error())
+		rw.WriteHeader(http.StatusBadRequest)
+		rw.Write([]byte("not id"))
+	}
+
+	offer, err := h.service.GetOffer(r.Context(), id)
+	if err != nil {
+		h.log.Error(err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
+	}
+
+	json, err := json.Marshal(offer)
+	if err != nil {
+		err = fmt.Errorf("can't marshal offer id = %d : %w", id, err)
+		h.log.Error(err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte(err.Error()))
+	}
+	rw.WriteHeader(http.StatusOK)
 	rw.Write(json)
 }

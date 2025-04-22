@@ -21,9 +21,9 @@ func New(pg *postgres.Postgress, log *logger.AppLogger) *OfferRepo {
 
 func (r *OfferRepo) Create(ctx context.Context, offer entity.Offer) error {
 
-	query := fmt.Sprintf("insert into offers (offer_id , \"name\" , price , available ) values (%d, %s, %f, %t)", offer.OfferId, offer.Name, offer.Price, offer.Available)
-
-	_, err := r.client.Pool.Exec(ctx, query, nil)
+	// baseQuery := fmt.Sprintf("insert into offers (offer_id , \"name\" , price , available ) values (%d, %s, %f, %t)", offer.OfferId, offer.Name, offer.Price, offer.Available)
+	baseQuery := "insert into offers (offer_id , \"name\" , price , available ) values ($1, $2, $3, $4)"
+	_, err := r.client.Pool.Exec(ctx, baseQuery, offer.OfferId, offer.Name, offer.Price, offer.Available)
 	if err != nil {
 		return fmt.Errorf("error insert offer %d in db, %w", offer.OfferId, err)
 	}
@@ -69,9 +69,10 @@ func (r *OfferRepo) Read(ctx context.Context) ([]entity.Offer, error) {
 
 func (r *OfferRepo) GetOffer(ctx context.Context, offer_id int) (*entity.Offer, error) {
 	//query := fmt.Sprintf("select o.offer_id, o.\"name\", o.price, o.available  from offers o where o.offer_id = %d", offer_id)
-	query := "select o.offer_id, o.\"name\", o.price, o.available  from offers o where o.offer_id = $1"
+	//query := "select o.offer_id, o.\"name\", o.price, o.available  from offers o where o.offer_id = $1"
 	o := &entity.Offer{}
-	err := r.client.Pool.QueryRow(ctx, query, offer_id).Scan(o.OfferId, o.Name, o.Price, o.Available)
+	row := r.client.Pool.QueryRow(ctx, "select o.offer_id, o.\"name\", o.price, o.available  from offers o where o.offer_id = $1", offer_id)
+	err := row.Scan(&o.OfferId, &o.Name, &o.Price, &o.Available)
 	if err != nil {
 		return nil, fmt.Errorf("error select offer_id = %d %w", offer_id, err)
 	}

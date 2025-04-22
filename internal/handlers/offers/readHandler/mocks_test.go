@@ -46,6 +46,21 @@ func (m *MockreadService) EXPECT() *MockreadServiceMockRecorder {
 	return m.recorder
 }
 
+// GetOffer mocks base method.
+func (m *MockreadService) GetOffer(ctx context.Context, offer_id int) (dto.OfferDto, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOffer", ctx, offer_id)
+	ret0, _ := ret[0].(dto.OfferDto)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOffer indicates an expected call of GetOffer.
+func (mr *MockreadServiceMockRecorder) GetOffer(ctx, offer_id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOffer", reflect.TypeOf((*MockreadService)(nil).GetOffer), ctx, offer_id)
+}
+
 // GetOffers mocks base method.
 func (m *MockreadService) GetOffers(ctx context.Context) ([]dto.OfferDto, error) {
 	m.ctrl.T.Helper()
@@ -146,3 +161,7 @@ func TestReadHandler(t *testing.T){
 		})
 	}
 }
+func TestGetOfferHandler(t *testing.T){
+	
+}
+
