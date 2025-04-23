@@ -38,7 +38,7 @@ func Run(cfg *config.Config) {
 
 	offerRepo := repo.New(db, log)
 	excelReader := excelReader.New(log)
-	readService := readOffers.New(offerRepo, log)
+	readService := readOffers.New(offerRepo)
 	writeService := writeOffers.New(excelReader, offerRepo, log)
 	storageService := storage.New(log)
 

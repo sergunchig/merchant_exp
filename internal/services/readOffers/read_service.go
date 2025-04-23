@@ -6,23 +6,20 @@ import (
 
 	"github.com/sergunchig/merchant_exp.git/dto"
 	"github.com/sergunchig/merchant_exp.git/internal/entity"
-	"github.com/sergunchig/merchant_exp.git/pkg/logger"
 )
 
 type repoOffers interface {
 	Read(ctx context.Context) ([]entity.Offer, error)
-	GetOffer(ctx context.Context, offer_id int) (*entity.Offer, error)
+	GetOffer(ctx context.Context, offer_id int) (entity.Offer, error)
 }
 
 type OfferService struct {
 	repo repoOffers
-	log  *logger.AppLogger
 }
 
-func New(repo repoOffers, log *logger.AppLogger) *OfferService {
+func New(repo repoOffers) *OfferService {
 	return &OfferService{
 		repo: repo,
-		log:  log,
 	}
 }
 
@@ -39,7 +36,7 @@ func (o *OfferService) GetOffer(ctx context.Context, offer_id int) (dto.OfferDto
 	if err != nil {
 		return dto.OfferDto{}, err
 	}
-	return dto.MakeOfferDisplay(*offer), nil
+	return dto.MakeOfferDisplay(offer), nil
 }
 
 func (o *OfferService) offersDto(offers []entity.Offer) ([]dto.OfferDto, error) {
