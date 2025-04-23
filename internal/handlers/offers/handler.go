@@ -1,3 +1,5 @@
+// todo название сделать в goway, я про название пакета
+//
 //go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
 package handler
 

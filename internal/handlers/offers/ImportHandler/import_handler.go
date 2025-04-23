@@ -1,3 +1,5 @@
+// Название ImportHandler надо сделать в go way стиле
+//
 //go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
 package importHandler
 
@@ -54,7 +56,7 @@ func (h *WriteHandler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Re
 		return
 	}
 	err = h.service.ImportOffers(r.Context(), file)
-
+	// todo между err и проверкой не должно быть пустой строки
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte(err.Error()))
