@@ -39,7 +39,12 @@ func (h *WriteHandler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Re
 		http.Error(rw, "request error", http.StatusInternalServerError)
 		return
 	}
-	defer uploadData.Close()
+	defer func() {
+		err = uploadData.Close()
+		if err != nil {
+			h.log.Error(err.Error())
+		}
+	}()
 
 	file := "./storage/excelfile.xlsx"
 	err = h.storage.SaveFile(uploadData, file) //mock
