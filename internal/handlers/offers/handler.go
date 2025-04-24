@@ -1,3 +1,5 @@
+// todo название сделать в goway, я про название пакета
+//
 //go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
 package handler
 
@@ -41,44 +43,3 @@ func (s *Handler) HomeHandler(rw http.ResponseWriter, r *http.Request) {
 		s.log.Error(fmt.Errorf("cant execute template 'home' %w", err).Error())
 	}
 }
-
-// func (h *Handler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Request) {
-
-// 	offers, err := h.reader.Read(file)
-
-// 	if err != nil {
-// 		h.log.Error(err.Error())
-// 		rw.Write([]byte(err.Error()))
-// 		return
-// 	}
-
-// 	err = h.offers.CreateOffers(r.Context(), offers)
-// 	if err != nil {
-// 		h.log.Error(err.Error())
-// 		rw.Write([]byte(err.Error()))
-// 		return
-// 	}
-// 	rw.Write([]byte("Offers import is successfully"))
-// }
-
-// todo viewmodel
-// func (h *Handler) GetOffers(rw http.ResponseWriter, r *http.Request) {
-
-// 	offers, err := h.offers.GetOffers(r.Context())
-// 	if err != nil {
-// 		h.log.Error(err.Error())
-// 		rw.WriteHeader(http.StatusInternalServerError)
-// 		rw.Write([]byte("status 500"))
-// 		return
-// 	}
-// 	data, err := json.Marshal(offers)
-// 	if err != nil {
-// 		h.log.Error(fmt.Errorf("json marshal error: %w", err).Error())
-// 		rw.WriteHeader(http.StatusInternalServerError)
-// 		rw.Write([]byte("status 500"))
-// 		return
-// 	}
-// 	rw.Header().Set("Content-Type", "application/json")
-// 	rw.WriteHeader(http.StatusOK)
-// 	rw.Write(data)
-// }

@@ -34,6 +34,7 @@ type (
 
 func NewConfig() (*Config, error) {
 
+	// todo давай использовать логи?
 	fmt.Println("init  configuration")
 	err := godotenv.Load()
 	if err != nil {

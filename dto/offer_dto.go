@@ -1,3 +1,4 @@
+// todo из названия файла надо удлить _dto
 package dto
 
 import "github.com/sergunchig/merchant_exp.git/internal/entity"

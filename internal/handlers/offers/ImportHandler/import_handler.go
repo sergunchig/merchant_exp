@@ -1,3 +1,5 @@
+// Название ImportHandler надо сделать в go way стиле
+//
 //go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
 package importHandler
 
@@ -39,7 +41,12 @@ func (h *WriteHandler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Re
 		http.Error(rw, "request error", http.StatusInternalServerError)
 		return
 	}
-	defer uploadData.Close()
+	defer func() {
+		err = uploadData.Close()
+		if err != nil {
+			h.log.Error(err.Error())
+		}
+	}()
 
 	file := "./storage/excelfile.xlsx"
 	err = h.storage.SaveFile(uploadData, file) //mock
@@ -49,7 +56,7 @@ func (h *WriteHandler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Re
 		return
 	}
 	err = h.service.ImportOffers(r.Context(), file)
-
+	// todo между err и проверкой не должно быть пустой строки
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte(err.Error()))
