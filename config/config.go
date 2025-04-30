@@ -35,11 +35,10 @@ type (
 func NewConfig() (*Config, error) {
 
 	// todo давай использовать логи?
-	fmt.Println("init  configuration")
+	//logger еще не инициализирован
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println("can't load environment")
-		panic("can't load environment")
+		return nil, fmt.Errorf("can't load environment: %w", err)
 	}
 
 	host := os.Getenv("HOST")
