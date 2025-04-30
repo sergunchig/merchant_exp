@@ -1,5 +1,5 @@
 //go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
-package writeOffers
+package writeservice
 
 import (
 	"context"

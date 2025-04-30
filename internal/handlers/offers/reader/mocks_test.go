@@ -7,7 +7,7 @@
 //
 
 // Package readHandler_test is a generated GoMock package.
-package readHandler_test
+package reader_test
 
 import (
 	context "context"
@@ -18,7 +18,8 @@ import (
 	"testing"
 
 	dto "github.com/sergunchig/merchant_exp.git/dto"
-	"github.com/sergunchig/merchant_exp.git/internal/handlers/offers/readHandler"
+	"github.com/sergunchig/merchant_exp.git/internal/handlers/offers/reader"
+
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -143,7 +144,7 @@ func TestReadHandler(t *testing.T){
 	log := NewMockofferLogger(ctrl)
 	log.EXPECT().Error(gomock.Any()).AnyTimes()
 
-	hndlr := readHandler.New(service, log)
+	hndlr := reader.New(service, log)
 
 	for _,test := range tests{
 		service.EXPECT().GetOffers(ctx).Return(test.dtos, test.err).Times(1)	

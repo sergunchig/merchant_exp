@@ -7,7 +7,7 @@
 //
 
 // Package importHandler_test is a generated GoMock package.
-package importHandler_test
+package importer_test
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 
-	importHandler "github.com/sergunchig/merchant_exp.git/internal/handlers/offers/ImportHandler"
+	importHandler "github.com/sergunchig/merchant_exp.git/internal/handlers/offers/importer"
 )
 
 // MockofferLogger is a mock of offerLogger interface.
@@ -180,7 +180,7 @@ func TestImportHandler(t *testing.T){
 
 		rw := httptest.NewRecorder()
 
-		handler.UploadAndImportHandler(rw, req)
+		handler.UploadAndImport(rw, req)
 
 		t.Run(test.name, func (t *testing.T)  {
 			if status := rw.Code; status != http.StatusOK {

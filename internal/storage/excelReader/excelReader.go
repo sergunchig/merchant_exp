@@ -1,8 +1,7 @@
 //go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
-package excelReader
+package excelreader
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
@@ -56,43 +55,4 @@ func (er ExcelReader) Read(file string) ([]entity.Offer, error) {
 	} else {
 		return nil, fmt.Errorf(fmt.Sprintf("error read file %s", file), errors.New(""))
 	}
-}
-func (er ExcelReader) ReadAsync(ctx context.Context, done func(), file string) (<-chan entity.Offer, error) {
-
-	out := make(chan entity.Offer, 10)
-
-	wb, err := xlsx.OpenFile(file)
-	if err != nil {
-		return nil, fmt.Errorf("error open excel file: %w", err)
-	}
-	sheet := wb.Sheets[0]
-
-	go func() {
-		for i := 1; i < sheet.MaxRow; i++ {
-			r, err := sheet.Row(i)
-			if err != nil {
-				done()
-				return
-			}
-			id, err := r.GetCell(0).Int()
-			if err != nil {
-				done()
-				return
-			}
-			price, err := r.GetCell(2).Float()
-			if err != nil {
-				done()
-				return
-			}
-
-			out <- entity.Offer{
-				OfferId:   id,
-				Name:      r.GetCell(1).Value,
-				Price:     price,
-				Available: r.GetCell(3).Bool(),
-			}
-		}
-		close(out)
-	}()
-	return out, nil
 }

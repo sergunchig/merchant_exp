@@ -7,14 +7,17 @@ import (
 	"time"
 
 	"github.com/sergunchig/merchant_exp.git/config"
-	handler "github.com/sergunchig/merchant_exp.git/internal/handlers/offers"
-	importHandler "github.com/sergunchig/merchant_exp.git/internal/handlers/offers/ImportHandler"
-	"github.com/sergunchig/merchant_exp.git/internal/handlers/offers/readHandler"
-	"github.com/sergunchig/merchant_exp.git/internal/repo"
-	"github.com/sergunchig/merchant_exp.git/internal/services/readOffers"
-	"github.com/sergunchig/merchant_exp.git/internal/services/writeOffers"
+
+	"github.com/sergunchig/merchant_exp.git/internal/handlers/offers/home"
+	"github.com/sergunchig/merchant_exp.git/internal/handlers/offers/importer"
+	"github.com/sergunchig/merchant_exp.git/internal/handlers/offers/reader"
+	"github.com/sergunchig/merchant_exp.git/internal/repo/offer"
+
+	readservice "github.com/sergunchig/merchant_exp.git/internal/services/readService"
+	"github.com/sergunchig/merchant_exp.git/internal/services/writeservice"
+
 	"github.com/sergunchig/merchant_exp.git/internal/storage"
-	"github.com/sergunchig/merchant_exp.git/internal/storage/excelReader"
+	"github.com/sergunchig/merchant_exp.git/internal/storage/excelreader"
 	"github.com/sergunchig/merchant_exp.git/pkg/logger"
 	"github.com/sergunchig/merchant_exp.git/pkg/postgres"
 )
@@ -36,20 +39,20 @@ func Run(cfg *config.Config) {
 	}
 	defer db.Close()
 
-	offerRepo := repo.New(db, log)
-	excelReader := excelReader.New(log)
-	readService := readOffers.New(offerRepo)
-	writeService := writeOffers.New(excelReader, offerRepo, log) // todo тут тоже лога не увидел
+	offerRepo := offer.New(db, log)
+	excelReader := excelreader.New(log)
+	readService := readservice.New(offerRepo)
+	writeService := writeservice.New(excelReader, offerRepo, log) // todo тут тоже лога не увидел
 	storageService := storage.New(log)
 
-	offerhandler := handler.New(log) // todo тут надо название поправить и сделать в camelCase, для однообразия лучше сделать alias offerHandler
-	readHandler := readHandler.New(readService, log)
-	importHandler := importHandler.New(writeService, storageService, log)
+	homeHandler := home.New(log)
+	readHandler := reader.New(readService, log) // todo тут надо название поправить и сделать в camelCase, для однообразия лучше сделать alias offerHandler
+	importHandler := importer.New(writeService, storageService, log)
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", offerhandler.HomeHandler)
-	mux.HandleFunc("/uploadandimport", importHandler.UploadAndImportHandler)
+	mux.HandleFunc("/", homeHandler.Home)
+	mux.HandleFunc("/uploadandimport", importHandler.UploadAndImport)
 	mux.HandleFunc("/getoffers/", readHandler.GetOffers)
 	mux.HandleFunc("/getoffer", readHandler.GetOffer)
 
