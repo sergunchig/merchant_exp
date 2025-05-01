@@ -26,7 +26,7 @@ func New(url string) (*Postgress, error) {
 
 	pool, err := pgxpool.New(context.Background(), url)
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("postgress pool create error %w", err)
 	}
 	pg := &Postgress{
 		maxPoolSize:  defaultMaxPoolSize,
