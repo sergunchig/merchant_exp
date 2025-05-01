@@ -8,28 +8,21 @@ import (
 )
 
 type excelReader interface {
-	//ReadAsync(ctx context.Context, done func(), file string) (<-chan entity.Offer, error)
 	Read(file string) ([]entity.Offer, error)
 }
 type offerRepo interface {
-	//CreateOffersAsync(ctx context.Context, in <-chan entity.Offer) error
 	CreateOffers(ctx context.Context, offers []entity.Offer) error
-}
-type logger interface {
-	Error(msg string)
 }
 
 type WriteService struct {
 	excelReader excelReader
 	repo        offerRepo
-	log         logger
 }
 
-func New(reader excelReader, repo offerRepo, log logger) *WriteService {
+func New(reader excelReader, repo offerRepo) *WriteService {
 	return &WriteService{
 		excelReader: reader,
 		repo:        repo,
-		log:         log,
 	}
 }
 

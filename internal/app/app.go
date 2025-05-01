@@ -35,14 +35,14 @@ func Run(cfg *config.Config) {
 
 	db, err := postgres.New(cfg.DB.DBCONNECTION) // todo можно вынести инициализацию в функцию MustInitPg которая внутри кидает панику, и в таком стиле сделать инициализации инфровые и тогда будет меньше кода в мейн
 	if err != nil {
-		panic(fmt.Errorf("potgres error, %w", err))
+		panic(err)
 	}
 	defer db.Close()
 
 	offerRepo := offer.New(db, log)
 	excelReader := excelreader.New(log)
 	readService := readservice.New(offerRepo)
-	writeService := writeservice.New(excelReader, offerRepo, log) // todo тут тоже лога не увидел
+	writeService := writeservice.New(excelReader, offerRepo) // todo тут тоже лога не увидел. лог убрал
 	storageService := storage.New(log)
 
 	homeHandler := home.New(log)
@@ -63,15 +63,15 @@ func Run(cfg *config.Config) {
 	go func() {
 		err = srv.ListenAndServe()
 		// todo ты увереш что это сообщение выведется? кажется что на этой функции горутина подвисает
-		fmt.Println("server was started...")
+		//fmt.Println("server was started...") //убираю, она не выводится
 		if err != nil {
-			panic(fmt.Errorf("server can't start %w", err))
+			panic(fmt.Errorf("server can't start: %w", err))
 		}
 	}()
 
 	<-ctx.Done()
 	// todo минута это долго, давай поставим секунд 10
-	shutdownCtx, closeFunc := context.WithTimeout(context.Background(), time.Minute)
+	shutdownCtx, closeFunc := context.WithTimeout(context.Background(), time.Second*10)
 	defer closeFunc()
 	//nolint:errcheck
 	err = srv.Shutdown(shutdownCtx)

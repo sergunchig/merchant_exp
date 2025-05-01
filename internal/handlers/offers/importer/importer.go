@@ -56,8 +56,7 @@ func (h *WriteHandler) UploadAndImport(rw http.ResponseWriter, r *http.Request) 
 		return
 	}
 	err = h.service.ImportOffers(r.Context(), file)
-	// todo между err и проверкой не должно быть пустой строки
-	if err != nil {
+	if err != nil { // todo между err и проверкой не должно быть пустой строки
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte(err.Error()))
 		h.log.Error(err.Error())
