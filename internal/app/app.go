@@ -33,10 +33,7 @@ func Run(cfg *config.Config) {
 		panic(fmt.Errorf("logger error, %w", err))
 	}
 
-	db, err := postgres.New(cfg.DB.DBCONNECTION) // todo можно вынести инициализацию в функцию MustInitPg которая внутри кидает панику, и в таком стиле сделать инициализации инфровые и тогда будет меньше кода в мейн
-	if err != nil {
-		panic(err)
-	}
+	db := postgres.MustInitPg(cfg.DB.DBCONNECTION)
 	defer db.Close()
 
 	offerRepo := offer.New(db, log)

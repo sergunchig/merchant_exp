@@ -22,6 +22,14 @@ type Postgress struct {
 	Pool *pgxpool.Pool
 }
 
+func MustInitPg(url string) *Postgress {
+	db, err := New(url)
+	if err != nil {
+		panic(err)
+	}
+	return db
+}
+
 func New(url string) (*Postgress, error) {
 
 	pool, err := pgxpool.New(context.Background(), url)
