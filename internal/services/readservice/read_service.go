@@ -39,10 +39,12 @@ func (o *ReadService) GetOffer(ctx context.Context, offerId int) (dto.OfferDto, 
 		return dto.OfferDto{}, err
 	}
 	// todo не очень понятно обязанность сервиса? сходить в репозиторий и преобразовать в объект транспорта может и сам хендлер?
+	//для однообразия подходов, в каждой ветке бизнес-логики
 	return dto.MakeOfferDisplay(offer), nil
 }
 
 // todo это же тоже самое что функция dto.MakeOfferDisplay, только если бы она принимала слайс на вход у тебя две одинаковые только в двух разных местах
+// это нужно перенести в пакет dto?
 func (o *ReadService) offersDto(offers []entity.Offer) ([]dto.OfferDto, error) {
 	offersDto := make([]dto.OfferDto, 0, 1000)
 
