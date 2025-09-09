@@ -1,7 +1,7 @@
 // todo название сделать в goway, я про название пакета
 //
 //go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
-package handler
+package home
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ func New(log offerLogger) *Handler {
 	}
 }
 
-func (s *Handler) HomeHandler(rw http.ResponseWriter, r *http.Request) {
+func (s *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 	html := `<html>
 	<body>
 	<div>

@@ -7,16 +7,17 @@
 //
 
 // Package readOffers_test is a generated GoMock package.
-package readOffers_test
+package readservice_test
 
 import (
-	context "context"
-	reflect "reflect"
+	"context"
+	"reflect"
 	"testing"
 
-	entity "github.com/sergunchig/merchant_exp.git/internal/entity"
-	"github.com/sergunchig/merchant_exp.git/internal/services/readOffers"
-	gomock "go.uber.org/mock/gomock"
+	"github.com/sergunchig/merchant_exp.git/internal/entity"
+	readservice "github.com/sergunchig/merchant_exp.git/internal/services/readService"
+
+	"go.uber.org/mock/gomock"
 )
 
 // MockrepoOffers is a mock of repoOffers interface.
@@ -91,7 +92,7 @@ func TestReadOffer(t *testing.T){
 	ctrl := gomock.NewController(t)
 	repo := NewMockrepoOffers(ctrl)
 	
-	service := readOffers.New(repo)
+	service := readservice.New(repo)
 	ctx := context.Background()
 
 	for _, test := range tests{

@@ -1,7 +1,7 @@
 // Название ImportHandler надо сделать в go way стиле
 //
 //go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
-package importHandler
+package importer
 
 import (
 	"context"
@@ -34,7 +34,7 @@ func New(service importServices, storage storageService, log offerLogger) *Write
 	}
 }
 
-func (h *WriteHandler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Request) {
+func (h *WriteHandler) UploadAndImport(rw http.ResponseWriter, r *http.Request) {
 	uploadData, _, err := r.FormFile("file")
 	if err != nil {
 		h.log.Error(fmt.Errorf("cant parse file %w", err).Error())
@@ -56,8 +56,7 @@ func (h *WriteHandler) UploadAndImportHandler(rw http.ResponseWriter, r *http.Re
 		return
 	}
 	err = h.service.ImportOffers(r.Context(), file)
-	// todo между err и проверкой не должно быть пустой строки
-	if err != nil {
+	if err != nil { // todo между err и проверкой не должно быть пустой строки
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte(err.Error()))
 		h.log.Error(err.Error())

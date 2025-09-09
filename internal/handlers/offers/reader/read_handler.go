@@ -1,5 +1,5 @@
 //go:generate mockgen -source ${GOFILE} -destination mocks_test.go -package ${GOPACKAGE}_test
-package readHandler
+package reader
 
 import (
 	"context"
